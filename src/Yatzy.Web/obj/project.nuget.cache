@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "p1+hieahOCE=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\mvk\\web\\Yatzy\\src\\Yatzy.Web\\Yatzy.Web.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mvk\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.12\\microsoft.aspnetcore.app.internal.assets.10.0.12.nupkg.sha512"
+  ],
+  "logs": []
+}

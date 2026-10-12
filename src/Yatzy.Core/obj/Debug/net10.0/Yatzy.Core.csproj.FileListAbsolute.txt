@@ -1,0 +1,12 @@
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\bin\Debug\net10.0\Yatzy.Core.deps.json
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\bin\Debug\net10.0\Yatzy.Core.dll
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\bin\Debug\net10.0\Yatzy.Core.pdb
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.AssemblyInfoInputs.cache
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.AssemblyInfo.cs
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.csproj.CoreCompileInputs.cache
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.sourcelink.json
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.dll
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\refint\Yatzy.Core.dll
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\Yatzy.Core.pdb
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\ref\Yatzy.Core.dll

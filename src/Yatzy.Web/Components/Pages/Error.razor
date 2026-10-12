@@ -1,0 +1,27 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Fejl | Yatzy</PageTitle>
+
+<main class="finish-screen">
+    <p class="eyebrow">Noget gik galt</p>
+    <h1>Spillet kunne ikke indlæses.</h1>
+    <p>Prøv at genindlæse siden. Dine igangværende kast gemmes ikke ved genindlæsning.</p>
+
+    @if (ShowRequestId)
+    {
+        <p class="error-request-id">Reference: <code>@RequestId</code></p>
+    }
+
+</main>
+
+@code{
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

@@ -1,0 +1,63 @@
+<section class="score-sheet" aria-labelledby="score-sheet-title">
+    <header class="score-sheet-header">
+        <div>
+            <p class="paper-kicker">DIN POINTTAVLE</p>
+            <h2 id="score-sheet-title">Yatzy-sedlen</h2>
+        </div>
+        <span class="score-progress">@ScoreCard.FilledCount <span>/ 15</span></span>
+    </header>
+
+    <div class="score-columns" aria-label="Pointtavle med pointforslag og registrerede point">
+        <span>KATEGORI</span>
+        <span>POINT</span>
+    </div>
+
+    <div class="score-section">
+        <div class="section-heading"><span>ØVERSTE SEKTION</span><span>MAKS. 105</span></div>
+        @foreach (var definition in ScoreCategoryCatalog.All.Where(item => item.IsUpperSection))
+        {
+            <ScoreCategoryRow Definition="definition"
+                              IsFilled="ScoreCard.IsFilled(definition.Category)"
+                              RegisteredScore="ScoreCard.GetScore(definition.Category)"
+                              Suggestion="GetSuggestion(definition.Category)"
+                              OnSelect="OnSelect"
+                              OnSetZero="OnSetZero" />
+        }
+        <div class="score-subtotal"><span>Sum øverste</span><strong>@ScoreCard.UpperSectionSum</strong></div>
+        <div class="bonus-line @(ScoreCard.UpperBonus > 0 ? "bonus-earned" : string.Empty)">
+            <span>Bonus <small>ved 63 point</small></span>
+            <strong>@(ScoreCard.UpperBonus > 0 ? "+50" : ScoreCard.IsUpperSectionComplete ? "0" : "—")</strong>
+        </div>
+    </div>
+
+    <div class="score-section lower-section">
+        <div class="section-heading"><span>NEDERSTE SEKTION</span><span>KOMBINATIONER</span></div>
+        @foreach (var definition in ScoreCategoryCatalog.All.Where(item => !item.IsUpperSection))
+        {
+            <ScoreCategoryRow Definition="definition"
+                              IsFilled="ScoreCard.IsFilled(definition.Category)"
+                              RegisteredScore="ScoreCard.GetScore(definition.Category)"
+                              Suggestion="GetSuggestion(definition.Category)"
+                              OnSelect="OnSelect"
+                              OnSetZero="OnSetZero" />
+        }
+        <div class="score-subtotal"><span>Sum nederste</span><strong>@ScoreCard.LowerSectionSum</strong></div>
+    </div>
+
+    <footer class="score-sheet-total">
+        <span>Samlet score</span>
+        <strong>@ScoreCard.TotalScore</strong>
+        <span class="total-unit">POINT</span>
+    </footer>
+    <div class="score-legend"><span><i class="legend-dot proposal-dot"></i>Forslag</span><span><i class="legend-dot registered-dot"></i>Registreret</span></div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public ScoreCard ScoreCard { get; set; } = default!;
+    [Parameter] public IReadOnlyDictionary<ScoreCategory, int> Suggestions { get; set; } = new Dictionary<ScoreCategory, int>();
+    [Parameter] public EventCallback<ScoreCategory> OnSelect { get; set; }
+    [Parameter] public EventCallback<ScoreCategory> OnSetZero { get; set; }
+
+    private int? GetSuggestion(ScoreCategory category) =>
+        Suggestions.TryGetValue(category, out var score) ? score : null;
+}

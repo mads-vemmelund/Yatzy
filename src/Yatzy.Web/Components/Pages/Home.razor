@@ -1,0 +1,163 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject YatzyGame Game
+
+<PageTitle>Yatzy | Kast for kast</PageTitle>
+
+<div class="app-shell">
+	<header class="masthead">
+		<a class="brand" href="/" aria-label="Yatzy, gå til startsiden">
+			<span class="brand-mark" aria-hidden="true">Y</span>
+			<span class="brand-word">YATZY</span>
+		</a>
+		<div class="masthead-note"><span class="status-light"></span> DEN DANSKE KLASSIKER</div>
+	</header>
+
+	@if (!Game.IsStarted)
+	{
+		<main class="welcome-screen">
+			<section class="welcome-copy" aria-labelledby="welcome-title">
+				<p class="eyebrow">Fem terninger. Femten valg.</p>
+				<h1 id="welcome-title">Kast for<br /><em>kast.</em></h1>
+				<p class="welcome-description">Hold fast i de rigtige øjne, jagt den store kombination, og skriv din score ind på sedlen.</p>
+				<button class="primary-button start-button" type="button" @onclick="StartGame">
+					<span>Start nyt spil</span><span class="button-arrow" aria-hidden="true">→</span>
+				</button>
+				<div class="welcome-rules"><span>5 terninger</span><span>3 kast pr. tur</span><span>50 bonuspoint ved 63</span></div>
+			</section>
+
+			<div class="welcome-dice" aria-hidden="true">
+				<div class="die-face display-die" data-value="5"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></div>
+				<div class="die-face display-die" data-value="2"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></div>
+				<div class="die-face display-die" data-value="6"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></div>
+				<span class="dice-caption">DIT SPIL. DINE BESLUTNINGER.</span>
+			</div>
+		</main>
+	}
+	else if (Game.IsGameOver)
+	{
+		<main class="finish-screen">
+			<p class="eyebrow">Spillet er slut</p>
+			<h1>Godt spillet.</h1>
+			<p class="finish-total-label">Samlet score</p>
+			<p class="finish-total">@Game.ScoreCard.TotalScore <span>point</span></p>
+			<div class="finish-breakdown">
+				<div><span>Øverste sektion</span><strong>@Game.ScoreCard.UpperSectionSum</strong></div>
+				<div><span>Bonus</span><strong>+@Game.ScoreCard.UpperBonus</strong></div>
+				<div><span>Nederste sektion</span><strong>@Game.ScoreCard.LowerSectionSum</strong></div>
+			</div>
+			<button class="primary-button" type="button" @onclick="StartGame">
+				<span>Spil igen</span><span class="button-arrow" aria-hidden="true">↻</span>
+			</button>
+		</main>
+	}
+	else
+	{
+		<main class="game-screen">
+			<div class="game-heading">
+				<div>
+					<p class="eyebrow">Spillets gang</p>
+					<h1>Din tur <span class="turn-number">@(Game.ScoreCard.FilledCount + 1). / 15</span></h1>
+				</div>
+				<div class="score-total" aria-live="polite">
+					<span>Din score</span>
+					<strong>@Game.ScoreCard.TotalScore</strong>
+				</div>
+			</div>
+
+			<div class="game-layout">
+				<section class="table-stage" aria-labelledby="dice-heading">
+					<div class="stage-meta">
+						<div>
+							<p class="stage-kicker">KAST @(Game.RollCount == 0 ? 1 : Game.RollCount) <span>/ 3</span></p>
+							<h2 id="dice-heading">Dine terninger</h2>
+						</div>
+						<div class="roll-counter"><strong>@Game.RollsRemaining</strong><span>kast<br />tilbage</span></div>
+					</div>
+
+					<div class="dice-tray" aria-label="Dine fem terninger">
+						@for (var index = 0; index < Game.Dice.Count; index++)
+						{
+							var dieIndex = index;
+							<DieTile Die="Game.Dice[dieIndex]" Index="dieIndex" CanHold="@(Game.RollCount is > 0 and < 3 && !isRolling)" IsRolling="isRolling" OnToggle="ToggleHold" />
+						}
+					</div>
+
+					<div class="stage-action">
+						<button class="primary-button roll-button" type="button" @onclick="RollDice" disabled="@(Game.RollsRemaining == 0 || isRolling)">
+							<span class="roll-glyph" aria-hidden="true">⚄</span>
+							<span>@(Game.RollCount == 0 ? "Kast terninger" : "Kast igen")</span>
+						</button>
+						<p class="hold-instruction">@(Game.RollCount == 0 ? "Første kast ruller alle fem terninger." : Game.RollCount == 3 ? "Alle kast brugt. Vælg en kategori på sedlen." : "Tryk på terningerne, du vil beholde.")</p>
+					</div>
+
+					@if (!string.IsNullOrWhiteSpace(statusMessage))
+					{
+						<p class="game-status" role="status">@statusMessage</p>
+					}
+
+					<div class="stage-bottomline"><span>Fem terninger</span><span>En kategori pr. tur</span></div>
+				</section>
+
+				<ScoreCardView ScoreCard="Game.ScoreCard" Suggestions="Game.SuggestedScores" OnSelect="ChooseCategory" OnSetZero="SetCategoryToZero" />
+			</div>
+		</main>
+	}
+
+	<footer class="page-footer"><span>YATZY</span><span>Én spiller · Klassiske danske regler</span></footer>
+</div>
+
+@code {
+	private bool isRolling;
+	private string? statusMessage;
+
+	private void StartGame()
+	{
+		Game.StartNewGame();
+		statusMessage = null;
+	}
+
+	private async Task RollDice()
+	{
+		if (isRolling || Game.RollsRemaining == 0)
+		{
+			return;
+		}
+
+		isRolling = true;
+		var result = Game.Roll();
+		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+		await Task.Delay(480);
+		isRolling = false;
+	}
+
+	private void ToggleHold(int index)
+	{
+		var result = Game.ToggleHold(index);
+		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+	}
+
+	private void ChooseCategory(ScoreCategory category)
+	{
+		var result = Game.ChooseCategory(category);
+		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+	}
+
+	private void SetCategoryToZero(ScoreCategory category)
+	{
+		var result = Game.ChooseCategory(category, setToZero: true);
+		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+	}
+
+	private static string ErrorMessage(GameErrorCode errorCode) => errorCode switch
+	{
+		GameErrorCode.GameNotStarted => "Start et nyt spil først.",
+		GameErrorCode.GameOver => "Spillet er afsluttet. Start et nyt spil for at fortsætte.",
+		GameErrorCode.NoRollsRemaining => "Du har brugt alle tre kast.",
+		GameErrorCode.RollRequired => "Kast terningerne, før du vælger en kategori.",
+		GameErrorCode.InvalidDieIndex => "Den valgte terning findes ikke.",
+		GameErrorCode.HoldUnavailable => "Terningen kan ikke ændres lige nu.",
+		GameErrorCode.CategoryAlreadyUsed => "Kategorien er allerede udfyldt.",
+		_ => "Handlingen kunne ikke udføres. Prøv igen."
+	};
+}

@@ -1,0 +1,42 @@
+<div class="score-row @(IsFilled ? "is-filled" : string.Empty)">
+    @if (IsFilled)
+    {
+        <div class="score-choice score-choice-filled" aria-label="@($"{Definition.DanishName}: {RegisteredScore} point registreret")">
+            <span class="category-name">@Definition.DanishName</span>
+            <span class="registered-points">@RegisteredScore</span>
+        </div>
+        <span class="row-state" aria-label="Registreret">✓</span>
+    }
+    else if (Suggestion is not null)
+    {
+        <button class="score-choice score-choice-open" type="button" @onclick="() => OnSelect.InvokeAsync(Definition.Category)" aria-label="Vælg @Definition.DanishName, @Suggestion point">
+            <span class="category-name">@Definition.DanishName</span>
+            <span class="suggested-points">@Suggestion</span>
+        </button>
+        @if (Suggestion > 0)
+        {
+            <button class="zero-choice" type="button" @onclick="() => OnSetZero.InvokeAsync(Definition.Category)" aria-label="Sæt @Definition.DanishName til nul point">0</button>
+        }
+        else
+        {
+            <span class="row-state row-state-empty" aria-hidden="true">·</span>
+        }
+    }
+    else
+    {
+        <div class="score-choice score-choice-waiting">
+            <span class="category-name">@Definition.DanishName</span>
+            <span class="waiting-points">—</span>
+        </div>
+        <span class="row-state row-state-empty" aria-hidden="true">·</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ScoreCategoryDefinition Definition { get; set; } = default!;
+    [Parameter] public bool IsFilled { get; set; }
+    [Parameter] public int? RegisteredScore { get; set; }
+    [Parameter] public int? Suggestion { get; set; }
+    [Parameter] public EventCallback<ScoreCategory> OnSelect { get; set; }
+    [Parameter] public EventCallback<ScoreCategory> OnSetZero { get; set; }
+}

@@ -1,7 +1,17 @@
 # Yatzy
 
-Et planlagt, dansksproget Yatzy-spil til én spiller. Spillet skal følge klassiske danske Yatzy-regler med fem terninger, en pointtavle med 15 kategorier og automatisk beregning af point og bonus.
+Et dansksproget Yatzy-spil til én spiller, bygget med C#, .NET 10 og ASP.NET Core Blazor. Spillet har fem terninger, 15 klassiske kategorier, automatisk pointberegning og en responsiv kasino-inspireret brugerflade. Spillogikken er adskilt fra webappen og dækket af xUnit-tests.
 
-Projektet udvikles i C# og .NET 10 med ASP.NET Core Blazor. Spillogikken holdes adskilt fra brugerfladen, så reglerne kan testes selvstændigt med xUnit. Brugerfladen får et responsivt kasino-inspireret design.
+## Kør appen
 
-Se [spec.md](spec.md) for krav, spilleregler, arkitektur og implementeringsplan. Applikationen er endnu ikke implementeret.
+```powershell
+dotnet run --project src/Yatzy.Web/Yatzy.Web.csproj
+```
+
+## Kør tests
+
+```powershell
+dotnet test Yatzy.sln
+```
+
+Se [spec.md](spec.md) for de komplette spilleregler, krav og arkitektur.

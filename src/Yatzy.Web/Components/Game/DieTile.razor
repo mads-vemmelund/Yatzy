@@ -1,0 +1,31 @@
+<button class="die-button @(Die.IsHeld ? "is-held" : string.Empty) @(IsRolling ? "is-rolling" : string.Empty)"
+        type="button"
+        aria-label="@AccessibleLabel"
+        aria-pressed="@(Die.IsHeld ? "true" : "false")"
+        disabled="@(!CanHold)"
+        @onclick="() => OnToggle.InvokeAsync(Index)">
+    <span class="die-face" data-value="@(Die.Value?.ToString() ?? "0")" aria-hidden="true">
+        @for (var pip = 0; pip < 9; pip++)
+        {
+            <i class="pip"></i>
+        }
+    </span>
+    @if (Die.Value is null)
+    {
+        <span class="die-empty-label">Klar</span>
+    }
+    else if (Die.IsHeld)
+    {
+        <span class="held-label"><span aria-hidden="true">✓</span> Beholdt</span>
+    }
+</button>
+
+@code {
+    [Parameter, EditorRequired] public DieState Die { get; set; } = default!;
+    [Parameter] public int Index { get; set; }
+    [Parameter] public bool CanHold { get; set; }
+    [Parameter] public bool IsRolling { get; set; }
+    [Parameter] public EventCallback<int> OnToggle { get; set; }
+
+    private string AccessibleLabel => $"Terning {Index + 1}: {Die.Value?.ToString() ?? "ikke kastet"}{(Die.IsHeld ? ", beholdt" : string.Empty)}";
+}
