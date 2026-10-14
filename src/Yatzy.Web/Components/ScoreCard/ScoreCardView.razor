@@ -2,7 +2,7 @@
     <header class="score-sheet-header">
         <div>
             <p class="paper-kicker">DIN POINTTAVLE</p>
-            <h2 id="score-sheet-title">Yatzy-sedlen</h2>
+            <h2 id="score-sheet-title">@(PlayerName is null ? "Yatzy-sedlen" : $"{PlayerName}s pointtavle")</h2>
         </div>
         <span class="score-progress">@ScoreCard.FilledCount <span>/ 15</span></span>
     </header>
@@ -54,6 +54,7 @@
 
 @code {
     [Parameter, EditorRequired] public ScoreCard ScoreCard { get; set; } = default!;
+    [Parameter] public string? PlayerName { get; set; }
     [Parameter] public IReadOnlyDictionary<ScoreCategory, int> Suggestions { get; set; } = new Dictionary<ScoreCategory, int>();
     [Parameter] public EventCallback<ScoreCategory> OnSelect { get; set; }
     [Parameter] public EventCallback<ScoreCategory> OnSetZero { get; set; }

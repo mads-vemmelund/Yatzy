@@ -64,6 +64,91 @@ public sealed class YatzyGameTests
     }
 
     [Fact]
+    public void Multiplayer_turns_rotate_with_separate_scorecards_and_rounds()
+    {
+        var game = new YatzyGame(new SequenceDiceRoller(1, 1, 1, 1, 1, 2, 2, 2, 2, 2));
+        game.StartNewGame([
+            new PlayerSetup("Ada", "#d7ad5a"),
+            new PlayerSetup("Bo", "#78b5a0")
+        ]);
+
+        Assert.Equal("Ada", game.ActivePlayer?.Name);
+        game.Roll();
+        game.ChooseCategory(ScoreCategory.Ones);
+
+        Assert.Equal("Bo", game.ActivePlayer?.Name);
+        Assert.Equal(5, game.Players[0].ScoreCard.GetScore(ScoreCategory.Ones));
+        Assert.Null(game.Players[1].ScoreCard.GetScore(ScoreCategory.Ones));
+        Assert.Equal(1, game.RoundNumber);
+
+        game.Roll();
+        game.ChooseCategory(ScoreCategory.Twos);
+
+        Assert.Equal("Ada", game.ActivePlayer?.Name);
+        Assert.Equal(2, game.RoundNumber);
+        Assert.Equal(10, game.Players[1].ScoreCard.GetScore(ScoreCategory.Twos));
+        Assert.Equal(0, game.RollCount);
+    }
+
+    [Fact]
+    public void Game_finishes_only_after_every_player_fills_all_categories()
+    {
+        var game = new YatzyGame(new SequenceDiceRoller(1));
+        game.StartNewGame([
+            new PlayerSetup("Ada", "#d7ad5a"),
+            new PlayerSetup("Bo", "#78b5a0")
+        ]);
+
+        foreach (var category in Enum.GetValues<ScoreCategory>())
+        {
+            game.Roll();
+            game.ChooseCategory(category, setToZero: true);
+        }
+
+        Assert.False(game.IsGameOver);
+        Assert.Equal("Bo", game.ActivePlayer?.Name);
+
+        foreach (var category in Enum.GetValues<ScoreCategory>())
+        {
+            game.Roll();
+            game.ChooseCategory(category, setToZero: true);
+        }
+
+        Assert.True(game.IsGameOver);
+    }
+
+    [Fact]
+    public void Invalid_player_setup_does_not_change_an_active_game()
+    {
+        var game = new YatzyGame(new SequenceDiceRoller(1, 2, 3, 4, 5));
+        game.StartNewGame();
+        game.Roll();
+        var before = game.Dice.Select(die => die.Value).ToArray();
+
+        var result = game.StartNewGame([
+            new PlayerSetup("Ada", "#d7ad5a"),
+            new PlayerSetup("Bo", "#D7AD5A")
+        ]);
+
+        Assert.Equal(GameErrorCode.DuplicatePlayerColor, result.ErrorCode);
+        Assert.Equal(1, game.RollCount);
+        Assert.Equal(before, game.Dice.Select(die => die.Value).ToArray());
+        Assert.Single(game.Players);
+    }
+
+    [Fact]
+    public void Player_setup_requires_a_color_for_each_player()
+    {
+        var game = new YatzyGame(new SequenceDiceRoller(1));
+
+        var result = game.StartNewGame([new PlayerSetup("Ada", " ")]);
+
+        Assert.Equal(GameErrorCode.InvalidPlayerColor, result.ErrorCode);
+        Assert.False(game.IsStarted);
+        Assert.Empty(game.Players);
+    }
+
+    [Fact]
     public void Category_can_be_sacrificed_for_zero_and_cannot_be_reused()
     {
         var game = new YatzyGame(new SequenceDiceRoller(6, 6, 5, 3, 2));

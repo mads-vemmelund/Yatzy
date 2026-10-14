@@ -9,5 +9,9 @@ public enum GameErrorCode
     RollRequired,
     InvalidDieIndex,
     HoldUnavailable,
-    CategoryAlreadyUsed
+    CategoryAlreadyUsed,
+    InvalidPlayerCount,
+    InvalidPlayerName,
+    InvalidPlayerColor,
+    DuplicatePlayerColor
 }

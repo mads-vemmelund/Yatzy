@@ -13,16 +13,50 @@
 		<div class="masthead-note"><span class="status-light"></span> DEN DANSKE KLASSIKER</div>
 	</header>
 
-	@if (!Game.IsStarted)
+	@if (!Game.IsStarted || showSetup)
 	{
 		<main class="welcome-screen">
 			<section class="welcome-copy" aria-labelledby="welcome-title">
 				<p class="eyebrow">Fem terninger. Femten valg.</p>
-				<h1 id="welcome-title">Kast for<br /><em>kast.</em></h1>
-				<p class="welcome-description">Hold fast i de rigtige øjne, jagt den store kombination, og skriv din score ind på sedlen.</p>
-				<button class="primary-button start-button" type="button" @onclick="StartGame">
-					<span>Start nyt spil</span><span class="button-arrow" aria-hidden="true">→</span>
-				</button>
+				<h1 id="welcome-title">Yatzy<br /><em>ved bordet.</em></h1>
+				<p class="welcome-description">Saml holdet om ét bord. Vælg jeres navne og farver, og lad terningerne afgøre resten.</p>
+				<section class="setup-panel" aria-labelledby="setup-title">
+					<div class="setup-heading">
+						<h2 id="setup-title">Deltagere</h2>
+						<div class="player-count" role="group" aria-label="Antal deltagere">
+							@for (var count = 1; count <= 4; count++)
+							{
+								var playerCount = count;
+								<button type="button" class="count-button @(playerDrafts.Count == playerCount ? "is-selected" : string.Empty)" aria-pressed="@(playerDrafts.Count == playerCount)" @onclick="() => SetPlayerCount(playerCount)">@playerCount</button>
+							}
+						</div>
+					</div>
+					<div class="player-setup-list">
+						@for (var index = 0; index < playerDrafts.Count; index++)
+						{
+							var playerIndex = index;
+							<div class="player-setup-row">
+								<span class="player-color-swatch" style="--player-color: @playerDrafts[playerIndex].Color" aria-hidden="true"></span>
+								<label for="player-name-@playerIndex">Spiller @(playerIndex + 1)</label>
+								<input id="player-name-@playerIndex" maxlength="24" autocomplete="off" @bind="playerDrafts[playerIndex].Name" />
+								<label class="visually-hidden" for="player-color-@playerIndex">Farve for spiller @(playerIndex + 1)</label>
+								<select id="player-color-@playerIndex" aria-label="Farve for spiller @(playerIndex + 1)" @bind="playerDrafts[playerIndex].Color">
+									@foreach (var color in PlayerColors)
+									{
+									<option value="@color.Value">@color.Name</option>
+									}
+								</select>
+							</div>
+						}
+					</div>
+					@if (!string.IsNullOrWhiteSpace(setupMessage))
+					{
+						<p class="setup-message" role="alert">@setupMessage</p>
+					}
+					<button class="primary-button start-button" type="button" @onclick="StartGame" disabled="@(!CanStart)">
+						<span>Start nyt spil</span><span class="button-arrow" aria-hidden="true">→</span>
+					</button>
+				</section>
 				<div class="welcome-rules"><span>5 terninger</span><span>3 kast pr. tur</span><span>50 bonuspoint ved 63</span></div>
 			</section>
 
@@ -38,17 +72,27 @@
 	{
 		<main class="finish-screen">
 			<p class="eyebrow">Spillet er slut</p>
-			<h1>Godt spillet.</h1>
-			<p class="finish-total-label">Samlet score</p>
-			<p class="finish-total">@Game.ScoreCard.TotalScore <span>point</span></p>
-			<div class="finish-breakdown">
-				<div><span>Øverste sektion</span><strong>@Game.ScoreCard.UpperSectionSum</strong></div>
-				<div><span>Bonus</span><strong>+@Game.ScoreCard.UpperBonus</strong></div>
-				<div><span>Nederste sektion</span><strong>@Game.ScoreCard.LowerSectionSum</strong></div>
+			<h1>@(Winners.Count() == 1 ? $"{Winners.First().Name} vinder." : "Delt førsteplads.")</h1>
+			<p class="finish-total-label">@(Winners.Count() == 1 ? "Vinderens score" : "Vindernes score")</p>
+			<p class="finish-total">@WinningScore <span>point</span></p>
+			<div class="finish-player-list" aria-label="Slutresultater">
+				@foreach (var player in Game.Players.OrderByDescending(player => player.ScoreCard.TotalScore))
+				{
+					<div class="finish-player @(player.ScoreCard.TotalScore == WinningScore ? "is-winner" : string.Empty)" style="--player-color: @player.Color">
+						<div class="finish-player-name"><span class="player-color-swatch" aria-hidden="true"></span><strong>@player.Name</strong>@if (player.ScoreCard.TotalScore == WinningScore) { <span class="winner-label">VINDER</span> }</div>
+						<div class="finish-breakdown">
+							<div><span>Øverste</span><strong>@player.ScoreCard.UpperSectionSum</strong></div>
+							<div><span>Bonus</span><strong>+@player.ScoreCard.UpperBonus</strong></div>
+							<div><span>Nederste</span><strong>@player.ScoreCard.LowerSectionSum</strong></div>
+							<div><span>Total</span><strong>@player.ScoreCard.TotalScore</strong></div>
+						</div>
+					</div>
+				}
 			</div>
-			<button class="primary-button" type="button" @onclick="StartGame">
-				<span>Spil igen</span><span class="button-arrow" aria-hidden="true">↻</span>
-			</button>
+			<div class="finish-actions">
+				<button class="primary-button" type="button" @onclick="StartGame"><span>Spil igen</span><span class="button-arrow" aria-hidden="true">↻</span></button>
+				<button class="text-button" type="button" @onclick="() => showSetup = true">Ændr deltagere</button>
+			</div>
 		</main>
 	}
 	else
@@ -56,14 +100,24 @@
 		<main class="game-screen">
 			<div class="game-heading">
 				<div>
-					<p class="eyebrow">Spillets gang</p>
-					<h1>Din tur <span class="turn-number">@(Game.ScoreCard.FilledCount + 1). / 15</span></h1>
+					<p class="eyebrow">Runde @Game.RoundNumber</p>
+					<h1><span class="active-player-mark" style="--player-color: @Game.ActivePlayer!.Color" aria-hidden="true"></span>@Game.ActivePlayer.Name <span class="turn-number">@(Game.ScoreCard.FilledCount + 1). / 15</span></h1>
 				</div>
 				<div class="score-total" aria-live="polite">
-					<span>Din score</span>
+					<span>Spillerens score</span>
 					<strong>@Game.ScoreCard.TotalScore</strong>
 				</div>
 			</div>
+			<nav class="player-score-tabs" aria-label="Deltagernes pointoversigt">
+				@for (var index = 0; index < Game.Players.Count; index++)
+				{
+					var playerIndex = index;
+					var player = Game.Players[playerIndex];
+					<button type="button" class="player-score-tab @(selectedScoreCardIndex == playerIndex ? "is-selected" : string.Empty) @(Game.ActivePlayerIndex == playerIndex ? "is-active-player" : string.Empty)" style="--player-color: @player.Color" aria-pressed="@(selectedScoreCardIndex == playerIndex)" @onclick="() => selectedScoreCardIndex = playerIndex">
+						<span class="player-color-swatch" aria-hidden="true"></span><span class="player-tab-name">@player.Name@(Game.ActivePlayerIndex == playerIndex ? " · tur" : string.Empty)</span><strong>@player.ScoreCard.TotalScore</strong><small>@player.ScoreCard.FilledCount/15</small>
+					</button>
+				}
+			</nav>
 
 			<div class="game-layout">
 				<section class="table-stage" aria-labelledby="dice-heading">
@@ -99,22 +153,63 @@
 					<div class="stage-bottomline"><span>Fem terninger</span><span>En kategori pr. tur</span></div>
 				</section>
 
-				<ScoreCardView ScoreCard="Game.ScoreCard" Suggestions="Game.SuggestedScores" OnSelect="ChooseCategory" OnSetZero="SetCategoryToZero" />
+				<ScoreCardView ScoreCard="Game.Players[selectedScoreCardIndex].ScoreCard"
+							   PlayerName="@Game.Players[selectedScoreCardIndex].Name"
+							   Suggestions="@(selectedScoreCardIndex == Game.ActivePlayerIndex ? Game.SuggestedScores : EmptySuggestions)"
+							   OnSelect="ChooseCategory" OnSetZero="SetCategoryToZero" />
 			</div>
 		</main>
 	}
 
-	<footer class="page-footer"><span>YATZY</span><span>Én spiller · Klassiske danske regler</span></footer>
+	<footer class="page-footer"><span>YATZY</span><span>Lokalt spil · 1-4 deltagere · Klassiske danske regler</span></footer>
 </div>
 
 @code {
+	private static readonly (string Name, string Value)[] PlayerColors =
+	[
+		("Guld", "#d7ad5a"),
+		("Grøn", "#78b5a0"),
+		("Koral", "#e27b69"),
+		("Blå", "#91a9d6")
+	];
+	private static readonly IReadOnlyDictionary<ScoreCategory, int> EmptySuggestions = new Dictionary<ScoreCategory, int>();
+	private List<PlayerDraft> playerDrafts = [new("Spiller 1", PlayerColors[0].Value)];
 	private bool isRolling;
+	private bool showSetup;
 	private string? statusMessage;
+	private string? setupMessage;
+	private int selectedScoreCardIndex;
+	private bool CanStart => playerDrafts.All(player => !string.IsNullOrWhiteSpace(player.Name))
+		&& playerDrafts.Select(player => player.Color).Distinct(StringComparer.OrdinalIgnoreCase).Count() == playerDrafts.Count;
+	private int WinningScore => Game.Players.Count == 0 ? 0 : Game.Players.Max(player => player.ScoreCard.TotalScore);
+	private IEnumerable<PlayerState> Winners => Game.Players.Where(player => player.ScoreCard.TotalScore == WinningScore);
 
 	private void StartGame()
 	{
-		Game.StartNewGame();
+		var result = Game.StartNewGame(playerDrafts.Select(player => new PlayerSetup(player.Name, player.Color)).ToArray());
+		if (!result.Success)
+		{
+			setupMessage = ErrorMessage(result.ErrorCode);
+			return;
+		}
+
+		showSetup = false;
+		selectedScoreCardIndex = 0;
 		statusMessage = null;
+		setupMessage = null;
+	}
+
+	private void SetPlayerCount(int count)
+	{
+		var updatedPlayers = playerDrafts.Take(count).ToList();
+		while (updatedPlayers.Count < count)
+		{
+			var color = PlayerColors.First(option => updatedPlayers.All(player => player.Color != option.Value)).Value;
+			updatedPlayers.Add(new PlayerDraft($"Spiller {updatedPlayers.Count + 1}", color));
+		}
+
+		playerDrafts = updatedPlayers;
+		setupMessage = null;
 	}
 
 	private async Task RollDice()
@@ -126,7 +221,7 @@
 
 		isRolling = true;
 		var result = Game.Roll();
-		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+		statusMessage = result.Success ? $"{Game.ActivePlayer?.Name} har kastet. {Game.RollsRemaining} kast tilbage." : ErrorMessage(result.ErrorCode);
 		await Task.Delay(480);
 		isRolling = false;
 	}
@@ -139,15 +234,28 @@
 
 	private void ChooseCategory(ScoreCategory category)
 	{
+		var playerName = Game.ActivePlayer?.Name ?? "Spilleren";
+		var score = Game.SuggestedScores.GetValueOrDefault(category);
 		var result = Game.ChooseCategory(category);
-		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+		statusMessage = result.Success ? $"{playerName} registrerede {CategoryName(category)}: {score} point." : ErrorMessage(result.ErrorCode);
+		if (result.Success && !Game.IsGameOver)
+		{
+			selectedScoreCardIndex = Game.ActivePlayerIndex;
+		}
 	}
 
 	private void SetCategoryToZero(ScoreCategory category)
 	{
+		var playerName = Game.ActivePlayer?.Name ?? "Spilleren";
 		var result = Game.ChooseCategory(category, setToZero: true);
-		statusMessage = result.Success ? null : ErrorMessage(result.ErrorCode);
+		statusMessage = result.Success ? $"{playerName} stregede {CategoryName(category)} med 0 point." : ErrorMessage(result.ErrorCode);
+		if (result.Success && !Game.IsGameOver)
+		{
+			selectedScoreCardIndex = Game.ActivePlayerIndex;
+		}
 	}
+
+	private static string CategoryName(ScoreCategory category) => ScoreCategoryCatalog.All.Single(item => item.Category == category).DanishName;
 
 	private static string ErrorMessage(GameErrorCode errorCode) => errorCode switch
 	{
@@ -158,6 +266,16 @@
 		GameErrorCode.InvalidDieIndex => "Den valgte terning findes ikke.",
 		GameErrorCode.HoldUnavailable => "Terningen kan ikke ændres lige nu.",
 		GameErrorCode.CategoryAlreadyUsed => "Kategorien er allerede udfyldt.",
+		GameErrorCode.InvalidPlayerCount => "Vælg mellem 1 og 4 deltagere.",
+		GameErrorCode.InvalidPlayerName => "Alle deltagere skal have et navn.",
+		GameErrorCode.InvalidPlayerColor => "Vælg en farve til hver deltager.",
+		GameErrorCode.DuplicatePlayerColor => "Hver deltager skal have sin egen farve.",
 		_ => "Handlingen kunne ikke udføres. Prøv igen."
 	};
+
+	private sealed class PlayerDraft(string name, string color)
+	{
+		public string Name { get; set; } = name;
+		public string Color { get; set; } = color;
+	}
 }
