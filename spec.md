@@ -2,7 +2,7 @@
 
 ## 1. Projektbeskrivelse og formål
 
-Yatzy er en komplet, dansksproget webapplikation til én spiller, der implementerer klassisk dansk Yatzy med fem seks-sidede terninger og en pointtavle med 15 kategorier. Applikationen skal kunne bruges uden installation af klientsoftware og kunne demonstreres som afsluttende skoleprojekt.
+Yatzy er en komplet, dansksproget webapplikation til 1-4 deltagere, der spiller lokalt på samme enhed. Spillet implementerer klassisk dansk Yatzy med fem seks-sidede terninger og en individuel pointtavle med 15 kategorier for hver deltager. Applikationen skal kunne bruges uden installation af klientsoftware og kunne demonstreres som afsluttende skoleprojekt.
 
 Projektets formål er både at levere et færdigt og behageligt spil og at synliggøre centrale færdigheder i C#, objektorienteret programmering, Blazor, brugergrænseflader, inputvalidering og automatiseret test.
 
@@ -16,7 +16,8 @@ Projektets formål er både at levere et færdigt og behageligt spil og at synli
 
 ### Afgrænsning og fastlagte valg
 
-- Første version er et lokalt spil for én spiller. Der er ingen konti, multiplayer, servergemte spil, database eller leaderboard.
+- Første version er et lokalt spil for 1-4 deltagere på samme enhed. Der er ingen netværksbaseret multiplayer, konti, servergemte spil, database eller leaderboard.
+- Hver deltager vælger et navn og en farve ved spilstart. Deltagernes farver skal være forskellige, så de tydeligt kan skelnes i spillet.
 - En igangværende kamp ligger i Blazor-sessionens hukommelse. Genindlæsning eller lukning af siden starter ikke automatisk det tidligere spil igen.
 - Spillet følger den klassiske pointtavle med de 15 kategorier, 50 bonuspoint for mindst 63 point i øverste sektion og 50 point for Yatzy. Der gives ikke ekstra point for en eventuel ekstra Yatzy.
 - Spilleren må bevidst registrere 0 i enhver ledig kategori, også selv om terningerne ellers giver en positiv score dér.
@@ -45,9 +46,10 @@ Der oprettes ikke et generelt repository- eller databaseabstraktionslag, da vers
 
 ### FR-01: Start og nulstilling
 
-- Startsiden viser spillets navn, en kort introduktion og knappen **Start nyt spil**.
-- Når et nyt spil startes, oprettes en tom pointtavle, fem terninger uden værdier, tre resterende kast og samlet score 0.
-- Det skal være muligt at starte et nyt spil fra afslutningsskærmen uden at genindlæse siden.
+- Før spillet startes, kan brugeren vælge 1-4 deltagere og angive navn og en forskellig farve for hver deltager.
+- Startsiden viser spillets navn, deltageropsætningen og knappen **Start nyt spil**.
+- Når et nyt spil startes, oprettes en tom pointtavle for hver deltager. Den første deltager får turen med fem terninger uden værdier og tre tilgængelige kast.
+- Det skal være muligt at starte et nyt spil fra afslutningsskærmen uden at genindlæse siden; deltageropsætningen kan ændres inden start.
 
 ### FR-02: Terningekast
 
@@ -72,9 +74,11 @@ Der oprettes ikke et generelt repository- eller databaseabstraktionslag, da vers
 
 ### FR-04: Turafslutning og spilafslutning
 
-- Når en kategori er valgt, afsluttes turen, og næste tur klargøres automatisk med fem terninger uden værdier og tre nye kast.
-- Når alle 15 kategorier er udfyldt, afsluttes spillet automatisk.
-- Afslutningsskærmen viser øverste sum, bonus, nederste sum og endelig samlet score samt handlingen **Spil igen**.
+- Deltagerne spiller i den valgte rækkefølge, én ad gangen. En deltager gennemfører sin tur ved at registrere en kategori, hvorefter turen går til den næste deltager. Efter den sidste deltager begynder en ny runde hos den første deltager.
+- En tur afsluttes, når en kategori er valgt eller streget. Næste tur klargøres automatisk med fem terninger uden værdier og tre nye kast.
+- Efter tredje kast kan deltageren vælge en ledig kategori med den beregnede score eller strege en valgfri ledig kategori ved at registrere 0 point.
+- Spillet afsluttes automatisk, når alle deltagere har udfyldt eller streget alle 15 kategorier.
+- Afslutningsskærmen viser hver deltagers øverste sum, bonus, nederste sum og endelige samlede score. Deltageren med flest point vises som vinder; ved pointlighed vises alle deltagere med den højeste score som vindere. Skærmen tilbyder handlingen **Spil igen**.
 
 ### FR-05: Status og fejl
 
@@ -138,9 +142,9 @@ Terningerne `2-2-2-5-5` giver: Toere 6, Femmere 10, Ét par 10, To par 14, Tre e
 
 ### 5.2 Skærme og komponenter
 
-1. **Startskærm:** spilnavn, kort introduktion og stor knap til at starte et spil.
-2. **Spilskærm:** turstatus, fem terninger, kastknap, resterende kast, pointtavle og scoreoversigt.
-3. **Afslutningsskærm:** slutresultat og knap til at starte et nyt spil.
+1. **Startskærm:** spilnavn, valg af 1-4 deltagere, navne- og farvevalg samt knap til at starte et spil.
+2. **Spilskærm:** runde og aktiv deltager, fem terninger, kastknap, resterende kast, individuelle pointtavler og scoreoversigt.
+3. **Afslutningsskærm:** hver deltagers slutresultat, vinder eller delte vindere og knap til at starte et nyt spil.
 
 Spilskærmens centrale kontroller er:
 
@@ -148,6 +152,8 @@ Spilskærmens centrale kontroller er:
 - kastknap med synlig information om resterende kast;
 - en pointtavle opdelt i øverste og nederste sektion;
 - en tydelig adskillelse mellem midlertidige forslag og permanent registrerede point;
+- synlig markering af aktiv deltager og deltagerfarver, som også suppleres af navn eller anden tekstlig markering;
+- mulighed for at strege en valgfri ledig kategori ved at registrere 0 point, herunder efter tredje kast;
 - sum for øverste sektion, bonus, sum for nederste sektion og samlet score.
 
 Ledige kategorier skal fremstå handlingsbare og vise forslag efter et kast. Klik på kategoriens række registrerer forslaget; ved et positivt forslag har rækken desuden en separat **Sæt til 0**-knap, som registrerer nul i stedet. Et forslag på 0 registreres ved klik på rækken. Udfyldte kategorier skal fremstå låste og vise registreret værdi. Før et kast vises kategorier som utilgængelige, ikke som valgbare 0-pointmuligheder.
@@ -195,9 +201,27 @@ Som spiller vil jeg kunne skrive 0 i en valgfri ledig kategori, så jeg selv bes
 
 ### US-06: Se spilresultatet
 
-Som spiller vil jeg se resultatet, når sedlen er fuld, så jeg kan afslutte og starte igen.
+Som deltager vil jeg se alles resultater, når spillet er slut, så vi kan se, hvem der har vundet, og starte igen.
 
-**Acceptkriterier:** Når alle 15 kategorier er udfyldt, vises afslutningsskærmen automatisk med korrekt slutscore og en fungerende **Spil igen**-handling.
+**Acceptkriterier:** Når alle deltagere har udfyldt eller streget alle 15 kategorier, vises afslutningsskærmen automatisk med hver deltagers korrekte slutscore, vinderen eller delte vindere og en fungerende **Spil igen**-handling.
+
+### US-07: Opsætte deltagere
+
+Som arrangør vil jeg vælge 1-4 deltagere og angive navn og farve for hver, så spillet passer til gruppen og tydeligt viser, hvis tur det er.
+
+**Acceptkriterier:** Spillet kan startes med 1-4 deltagere. Alle deltagere har et navn og en unik farve, og opsætningen vises korrekt i spillet.
+
+### US-08: Spille på skift
+
+Som deltager vil jeg spille min komplette tur, før turen går videre til næste deltager, så alle følger samme rækkefølge gennem spillet.
+
+**Acceptkriterier:** Første deltager starter. Når en deltager registrerer eller streger en kategori, får næste deltager turen. Efter sidste deltager starter næste runde hos første deltager.
+
+### US-09: Strege en kategori
+
+Som deltager vil jeg kunne strege en valgfri ledig kategori efter mine kast ved at registrere 0 point, så jeg kan komme videre, når ingen kategori er værd at vælge.
+
+**Acceptkriterier:** Efter et kast kan deltageren registrere 0 i en vilkårlig ledig kategori. Efter tredje kast er det fortsat muligt at vælge og strege enhver ledig kategori. En streget kategori tæller som udfyldt og kan ikke ændres.
 
 ## 7. Datamodeller og forslag til C#-klasser
 
@@ -210,9 +234,10 @@ Navne kan justeres under implementering, men ansvar og regler skal bevares.
 - `DiceRoll`: repræsenterer de fem værdier for et udført kast og kan bruges som input til scoreberegning.
 - `ScoreCalculator`: ren logik, der beregner score for én kategori eller alle kategorier ud fra præcis fem værdier.
 - `ScoreEntry`: kategori, registrerede point og evt. tidspunkt/turnummer til visning eller fejlsøgning. En entry med `0` er udfyldt; fravær af entry er tom.
-- `ScoreCard`: ejer kategoriernes registrerede entries og beregner øvre sum, nedre sum, bonus og total. Afviser dobbeltregistrering.
-- `GameState`: spillets samlede tilstand, herunder pointtavle, terninger, kast i aktuel tur, aktuelle forslag og om spillet er aktivt eller afsluttet.
-- `YatzyGame` eller `GameEngine`: domænefacade, der udfører handlingerne `StartNewGame`, `Roll`, `ToggleHold` og `ChooseCategory`. Validerer forudsætninger og opdaterer tilstanden atomisk.
+- `ScoreCard`: ejer én deltagers kategorier og registrerede entries og beregner øvre sum, nedre sum, bonus og total. Afviser dobbeltregistrering.
+- `Player` eller tilsvarende: deltagernavn, unik visningsfarve og individuel pointtavle.
+- `GameState`: spillets samlede tilstand, herunder 1-4 deltagere, aktiv deltager, rundenummer, terninger, kast i aktuel tur, aktuelle forslag og om spillet er aktivt eller afsluttet.
+- `YatzyGame` eller `GameEngine`: domænefacade, der udfører handlingerne `StartNewGame`, `Roll`, `ToggleHold` og `ChooseCategory`/`CrossOutCategory`. Validerer deltagerantal, navne, farver og spilhandlinger samt opdaterer tilstanden atomisk.
 - `IDiceRoller`: abstraktion for generering af værdier; implementeres af en tilfældig produktionskaster og en deterministisk testkaster.
 - `GameActionResult` eller tilsvarende: resultat af en brugerhandling med succes/fejl og eventuel dansk UI-besked. Domænelaget kan alternativt bruge veldefinerede exceptions, men UI'et må ikke bruge exceptions som normal kontrolflow.
 
@@ -220,10 +245,11 @@ Navne kan justeres under implementering, men ansvar og regler skal bevares.
 
 - `App.razor` og router: applikationsskal og navigation.
 - `Home.razor`: startsiden.
-- `Game.razor`: spilskærm og binding til en scoped `YatzyGame`/spil-session.
+- `Game.razor`: spilskærm med aktiv deltager, individuelle pointtavler og binding til en scoped `YatzyGame`/spil-session.
 - `GameOver.razor` eller en afslutningskomponent: slutresultat og genstart.
 - `DiceTray.razor` og `DieView.razor`: terningvisning og behold-handling.
 - `ScoreCardView.razor`: pointtavle, forslag, registrerede værdier og summer.
+- Deltageropsætning og resultatvisning: valg af antal deltagere, navne og farver samt slutresultat og vinder.
 - `ScoreCategoryRow.razor`: tilgængelig kategori-række med handlingsnavn, scoreforslag og registreret/låst tilstand.
 - CSS opdeles efter eksisterende Blazor-templatekonventioner og komponentbehov; styling af terninger og pointtavle holdes adskilt fra domænekode.
 
@@ -234,6 +260,7 @@ Spiltilstanden er scoped til den aktuelle Blazor-circuit. Komponenter skal ikke 
 ### Tilstande
 
 - `NotStarted`: ingen aktiv kamp; startsiden vises.
+- `SettingUpPlayers`: valg af deltagerantal, navne og farver før spilstart.
 - `AwaitingFirstRoll`: aktiv kamp, ingen terninger kastet i turen, tre kast til rådighed.
 - `ChoosingAfterRoll`: mindst ét kast udført; spiller kan vælge beholdte terninger, kaste igen eller registrere kategori.
 - `GameOver`: alle kategorier er udfyldt; kun resultat og genstart er tilgængeligt.
@@ -242,24 +269,29 @@ Spiltilstanden er scoped til den aktuelle Blazor-circuit. Komponenter skal ikke 
 
 ### Normal tur
 
-1. Ny kamp opretter tom pointtavle og fem ikke-kastede terninger.
-2. Første kast genererer værdier for alle terninger og sætter kastforbruget til 1.
-3. Domænelaget beregner scoreforslag for alle ledige kategorier.
-4. Spilleren kan ændre behold-markeringer.
-5. Et nyt kast bruger én kastmulighed og genererer nye værdier for ikke-beholdte terninger. Beholdte værdier er uændrede.
-6. Spilleren kan gentage valget/kastet, indtil tre kast er brugt, eller vælge en kategori tidligere.
-7. Valg af kategori registrerer score, nulstiller turens terninger og kasttæller og begynder næste tur.
-8. Hvis ingen ledige kategorier er tilbage, går spillet til `GameOver` i stedet for at begynde en ny tur.
+1. Før en kamp vælges 1-4 deltagere, og hver deltager får et navn og en unik farve.
+2. Ny kamp opretter en tom pointtavle for hver deltager og fem ikke-kastede terninger til første deltager.
+3. Første kast genererer værdier for alle terninger og sætter kastforbruget til 1.
+4. Domænelaget beregner scoreforslag for alle ledige kategorier på den aktive deltagers pointtavle.
+5. Deltageren kan ændre behold-markeringer.
+6. Et nyt kast bruger én kastmulighed og genererer nye værdier for ikke-beholdte terninger. Beholdte værdier er uændrede.
+7. Deltageren kan gentage valget/kastet, indtil tre kast er brugt, eller vælge en kategori tidligere. En vilkårlig ledig kategori kan også streges ved at registrere 0 point.
+8. Valg eller overstregning af en kategori registrerer scoren, nulstiller turens terninger og kasttæller og giver turen til næste deltager i rækkefølgen.
+9. Efter sidste deltager begynder næste runde hos første deltager. Når alle deltagere har udfyldt alle 15 kategorier, går spillet til `GameOver` og viser slutresultaterne sorteret efter score.
 
 ### Invariants
 
-- Der er altid præcis fem terninger i en aktiv kamp.
+- En kamp har mellem 1 og 4 deltagere; hver deltager har præcis én individuel pointtavle.
+- Alle deltagere har et navn og en farve, og farverne er unikke i samme kamp.
+- Der er altid præcis fem terninger i en aktiv deltagers tur.
 - Kasttæller er 0 ved ny tur og højst 3.
 - Første kast udføres med alle fem terninger; et senere kast ændrer aldrig værdien af en beholdt terning.
 - Pointforslag kan kun eksistere efter mindst ét kast i den aktuelle tur.
 - Kun ledige kategorier kan vælges; registrerede værdier kan aldrig ændres.
-- Samlet score består af registrerede kategorier og en optjent bonus, aldrig af midlertidige forslag.
-- Spillet afsluttes præcis, når alle 15 kategorier er registreret.
+- Hver deltagers samlede score består af den deltagers registrerede kategorier og optjente bonus, aldrig af midlertidige forslag.
+- Turen går videre i fast rækkefølge efter hver registrerede eller overstregede kategori.
+- Spillet afsluttes præcis, når alle deltagere har registreret eller streget alle 15 kategorier.
+- Vinderen er deltageren eller deltagerne med den højeste samlede score.
 
 ## 9. Fejlhåndtering og validering
 
@@ -271,6 +303,7 @@ Domænelaget skal afvise følgende uden at ændre tilstanden:
 - registrering af kategori før første kast i turen;
 - registrering af en allerede udfyldt kategori;
 - terningeværdi uden for intervallet 1-6 eller scoreberegning på et forkert antal terninger;
+- start med færre end 1 eller flere end 4 deltagere, manglende deltager-navn eller gentagne deltagerfarver;
 - handlinger efter spilafslutning, bortset fra start af et nyt spil.
 
 UI'et skal holde visning og domænetilstand synkroniseret efter succesfulde handlinger. Fejlbeskeder skal være korte, danske og konkrete, fx at alle kast er brugt, eller at kategorien allerede er valgt. Der må ikke vises tekniske stack traces til spilleren.
@@ -310,6 +343,7 @@ Testprojektet bruger xUnit og refererer til domæneprojektet. Terningekasteren e
 - Test ingen bonus under 63.
 - Test bonus først indgår, når alle seks øvre kategorier er udfyldt.
 - Test at registreret 0 tæller som udfyldt, ikke som tom.
+- Test at hver deltagers pointtavle og score beregnes uafhængigt.
 - Test at en kategori ikke kan registreres to gange.
 - Test samlet score er summen af registrerede entries og optjent bonus, uden scoreforslag.
 
@@ -324,6 +358,11 @@ Testprojektet bruger xUnit og refererer til domæneprojektet. Terningekasteren e
 - Test kategori-valg låser værdien, nulstiller turen og klargør fem nye ikke-kastede terninger.
 - Test at spillet afsluttes efter præcis 15 udfyldte kategorier, og at yderligere spilhandlinger afvises.
 - Test at start af et nyt spil efter afslutning giver ren pointtavle og ny tur.
+- Test at spillet afviser deltagerantal uden for 1-4 samt ugyldige navne eller gentagne farver.
+- Test at turen starter hos første deltager og går videre til næste efter kategori-valg eller overstregning, også fra sidste deltager tilbage til første.
+- Test at en valgfri ledig kategori kan overstreges for 0 efter tredje kast, og at den derefter er låst.
+- Test at spillet først afsluttes, når alle deltagere har udfyldt alle 15 kategorier.
+- Test at slutresultater sorteres korrekt, at højeste score vinder, og at pointlighed giver delte vindere.
 
 ### UI-kontrol
 
