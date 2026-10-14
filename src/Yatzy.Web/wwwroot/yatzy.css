@@ -46,7 +46,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold-light); ou
     border-bottom: 1px solid var(--felt-line);
 }
 
-.brand { display: inline-flex; align-items: center; gap: 12px; color: #f7f0de; text-decoration: none; }
+.brand { display: inline-flex; align-items: center; color: #f7f0de; text-decoration: none; }
+.brand-logo { width: auto; height: 68px; max-width: min(190px, 42vw); display: block; object-fit: contain; }
 .brand-mark { width: 35px; height: 35px; display: grid; place-items: center; border: 1px solid var(--gold); color: var(--gold-light); font-family: var(--serif); font-size: 21px; line-height: 1; }
 .brand-word { font-size: 14px; font-weight: 750; letter-spacing: 2px; }
 .masthead-note, .eyebrow, .paper-kicker, .stage-kicker, .section-heading, .score-columns, .page-footer, .dice-caption { font-size: 10px; font-weight: 700; letter-spacing: 1.3px; }
@@ -312,7 +313,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--gold-light); ou
 @media (max-width: 480px) {
     .app-shell { width: min(100% - 28px, 420px); }
     .masthead-note { font-size: 8px; letter-spacing: 0.9px; }
-    .brand { gap: 8px; }
+    .brand-logo { height: 58px; max-width: min(155px, 43vw); }
     .brand-word { font-size: 12px; letter-spacing: 1.5px; }
     .welcome-screen { padding-top: 43px; }
     .welcome-copy h1 { font-size: 55px; }

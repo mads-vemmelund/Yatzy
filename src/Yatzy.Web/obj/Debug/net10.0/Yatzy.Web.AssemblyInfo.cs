@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Yatzy.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c4979bc45b68af4178852ec05626e91cdbe22d0f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+04d4223fd8dc0d6f52854faeca684d5c88523f5a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Yatzy.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Yatzy.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

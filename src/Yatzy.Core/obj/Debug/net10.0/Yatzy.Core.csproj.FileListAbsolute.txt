@@ -13,3 +13,6 @@ C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\Debug\net10.0\ref\Yatzy.Core.dll
 C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\validation-bin\Debug\net10.0\Yatzy.Core.deps.json
 C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\validation-bin\Debug\net10.0\Yatzy.Core.dll
 C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\validation-bin\Debug\net10.0\Yatzy.Core.pdb
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\header-check\Debug\net10.0\Yatzy.Core.deps.json
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\header-check\Debug\net10.0\Yatzy.Core.dll
+C:\Users\mvk\web\Yatzy\src\Yatzy.Core\obj\header-check\Debug\net10.0\Yatzy.Core.pdb
